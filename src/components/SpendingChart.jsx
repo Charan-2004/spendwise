@@ -68,15 +68,15 @@ const SpendingChart = ({ expenses }) => {
     };
 
     return (
-        <div style={{ width: '100%', height: '300px' }}>
+        <div style={{ width: '100%', height: '400px' }}>
             <ResponsiveContainer>
-                <PieChart>
+                <PieChart margin={{ right: 20 }}>
                     <Pie
                         data={chartData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
+                        innerRadius={120}
+                        outerRadius={165}
                         paddingAngle={5}
                         dataKey="value"
                         stroke="none"
@@ -87,8 +87,10 @@ const SpendingChart = ({ expenses }) => {
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
-                        verticalAlign="bottom"
-                        height={36}
+                        layout="vertical"
+                        verticalAlign="middle"
+                        align="right"
+                        wrapperStyle={{ paddingLeft: '20px' }}
                         formatter={(value) => <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{value}</span>}
                     />
                 </PieChart>

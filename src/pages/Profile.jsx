@@ -59,57 +59,52 @@ export default function Profile() {
         }
     };
 
+    const getCurrencySymbol = (currencyCode) => {
+        const symbols = {
+            'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥',
+            'INR': '₹', 'CAD': '$', 'AUD': '$', 'CNY': '¥'
+        };
+        return symbols[currencyCode] || '$';
+    };
+
     return (
         <Layout>
             <h2 className="page-title">Profile Settings</h2>
 
-            <div className="glass-panel" style={{ maxWidth: '40rem', margin: '0 auto', padding: '2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{
-                        width: '5rem',
-                        height: '5rem',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '2rem',
-                        fontWeight: 'bold',
-                        color: 'white',
-                        boxShadow: '0 0 20px rgba(99, 102, 241, 0.3)'
-                    }}>
+            <div className="card" style={{ maxWidth: '40rem', margin: '0 auto' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div className="avatar" style={{ width: '4rem', height: '4rem', fontSize: '1.5rem' }}>
                         {user?.email?.[0].toUpperCase()}
                     </div>
                     <div>
-                        <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 'bold' }}>{user?.email}</h3>
-                        <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>Member since {new Date(user?.created_at).toLocaleDateString()}</p>
+                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '600', color: 'var(--color-text-primary)' }}>{user?.email}</h3>
+                        <p style={{ margin: '0.25rem 0 0', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>
+                            Member since {new Date(user?.created_at).toLocaleDateString()}
+                        </p>
                     </div>
                 </div>
 
                 {message.text && (
-                    <div style={{
-                        padding: '1rem',
-                        borderRadius: '0.5rem',
-                        marginBottom: '1.5rem',
-                        background: message.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                        color: message.type === 'success' ? '#22c55e' : '#f87171',
-                        border: `1px solid ${message.type === 'success' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+                    <div className="error-message" style={{
+                        background: message.type === 'success' ? '#ECFDF5' : '#FEF2F2',
+                        color: message.type === 'success' ? '#047857' : '#B91C1C',
+                        borderColor: message.type === 'success' ? '#6EE7B7' : '#FCA5A5'
                     }}>
                         {message.text}
                     </div>
                 )}
 
                 {!contextProfile ? (
-                    <div style={{ textAlign: 'center', padding: '2rem' }}>
-                        <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--color-primary)' }} />
-                        <p>Loading profile...</p>
+                    <div style={{ textAlign: 'center', padding: '3rem' }}>
+                        <Loader2 className="animate-spin" size={24} style={{ margin: '0 auto 1rem', color: 'var(--color-text-tertiary)' }} />
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Loading profile...</p>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div className="input-group">
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}>Full Name</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: '500' }}>Full Name</label>
                             <div style={{ position: 'relative' }}>
-                                <User size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
+                                <User size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
                                 <input
                                     type="text"
                                     className="input-field"
@@ -123,9 +118,11 @@ export default function Profile() {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                             <div className="input-group">
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}>Monthly Income</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: '500' }}>Monthly Income</label>
                                 <div style={{ position: 'relative' }}>
-                                    <DollarSign size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
+                                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)', fontWeight: '500' }}>
+                                        {getCurrencySymbol(profile.currency)}
+                                    </span>
                                     <input
                                         type="number"
                                         className="input-field"
@@ -138,9 +135,11 @@ export default function Profile() {
                             </div>
 
                             <div className="input-group">
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}>Fixed Expenses</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: '500' }}>Fixed Expenses</label>
                                 <div style={{ position: 'relative' }}>
-                                    <DollarSign size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
+                                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)', fontWeight: '500' }}>
+                                        {getCurrencySymbol(profile.currency)}
+                                    </span>
                                     <input
                                         type="number"
                                         className="input-field"
@@ -155,37 +154,38 @@ export default function Profile() {
                         </div>
 
                         <div className="input-group">
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-secondary)' }}>Currency</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: '500' }}>Currency</label>
                             <div style={{ position: 'relative' }}>
-                                <Globe size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)', zIndex: 1 }} />
+                                <Globe size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)', zIndex: 1 }} />
                                 <select
                                     className="input-field"
                                     style={{
                                         paddingLeft: '2.5rem',
                                         appearance: 'none',
                                         cursor: 'pointer',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                        backgroundColor: '#FFFFFF',
                                         color: 'var(--color-text-primary)'
                                     }}
                                     value={profile.currency}
                                     onChange={e => setProfile({ ...profile, currency: e.target.value })}
                                 >
-                                    <option value="USD" style={{ color: 'black' }}>USD ($) - US Dollar</option>
-                                    <option value="EUR" style={{ color: 'black' }}>EUR (€) - Euro</option>
-                                    <option value="GBP" style={{ color: 'black' }}>GBP (£) - British Pound</option>
-                                    <option value="JPY" style={{ color: 'black' }}>JPY (¥) - Japanese Yen</option>
-                                    <option value="INR" style={{ color: 'black' }}>INR (₹) - Indian Rupee</option>
-                                    <option value="CAD" style={{ color: 'black' }}>CAD ($) - Canadian Dollar</option>
-                                    <option value="AUD" style={{ color: 'black' }}>AUD ($) - Australian Dollar</option>
-                                    <option value="CNY" style={{ color: 'black' }}>CNY (¥) - Chinese Yuan</option>
+                                    <option value="USD">USD ($) - US Dollar</option>
+                                    <option value="EUR">EUR (€) - Euro</option>
+                                    <option value="GBP">GBP (£) - British Pound</option>
+                                    <option value="JPY">JPY (¥) - Japanese Yen</option>
+                                    <option value="INR">INR (₹) - Indian Rupee</option>
+                                    <option value="CAD">CAD ($) - Canadian Dollar</option>
+                                    <option value="AUD">AUD ($) - Australian Dollar</option>
+                                    <option value="CNY">CNY (¥) - Chinese Yuan</option>
                                 </select>
                                 <div style={{
                                     position: 'absolute',
-                                    right: '1rem',
+                                    right: '0.75rem',
                                     top: '50%',
                                     transform: 'translateY(-50%)',
                                     pointerEvents: 'none',
-                                    color: 'var(--color-text-secondary)'
+                                    color: 'var(--color-text-tertiary)',
+                                    fontSize: '0.75rem'
                                 }}>
                                     ▼
                                 </div>
@@ -196,17 +196,17 @@ export default function Profile() {
                             type="submit"
                             disabled={saving}
                             className="btn btn-primary"
-                            style={{ marginTop: '1rem' }}
+                            style={{ marginTop: '1rem', width: '100%' }}
                         >
                             {saving ? (
                                 <>
-                                    <Loader2 className="animate-spin" style={{ marginRight: '0.5rem' }} />
-                                    Saving Changes...
+                                    <Loader2 className="animate-spin" size={16} style={{ marginRight: '0.5rem' }} />
+                                    Saving...
                                 </>
                             ) : (
                                 <>
-                                    <Save size={18} style={{ marginRight: '0.5rem' }} />
-                                    Save Profile
+                                    <Save size={16} style={{ marginRight: '0.5rem' }} />
+                                    Save Changes
                                 </>
                             )}
                         </button>

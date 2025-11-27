@@ -79,7 +79,7 @@ export default function Layout({ children }) {
 
             {/* Mobile Header */}
             <div className="mobile-header">
-                <h1 className="brand-text" style={{ fontSize: '1.25rem' }}>
+                <h1 className="brand-text">
                     FinanceAI
                 </h1>
                 <button
@@ -104,7 +104,7 @@ export default function Layout({ children }) {
                                     className={`nav-item ${isActive(item.href) ? 'active' : ''}`}
                                 >
                                     <Icon className="nav-icon" />
-                                    <span className="font-medium">{item.name}</span>
+                                    <span className="font-medium" style={{ fontFamily: 'var(--font-body)', letterSpacing: '0.05em' }}>{item.name}</span>
                                 </Link>
                             );
                         })}
@@ -131,7 +131,7 @@ export default function Layout({ children }) {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         className="content-wrapper"
                     >
                         {children}

@@ -7,6 +7,14 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import ExpenseItem from '../components/ExpenseItem';
 import SpendingChart from '../components/SpendingChart';
 
+const QUOTES = [
+    { text: "Do not save what is left after spending, but spend what is left after saving.", author: "Warren Buffett" },
+    { text: "A budget is telling your money where to go instead of wondering where it went.", author: "Dave Ramsey" },
+    { text: "Financial freedom is available to those who learn about it and work for it.", author: "Robert Kiyosaki" },
+    { text: "It's not how much money you make, but how much money you keep.", author: "Robert Kiyosaki" },
+    { text: "Beware of little expenses. A small leak will sink a great ship.", author: "Benjamin Franklin" }
+];
+
 export default function Dashboard() {
     const { user, profile } = useAuth();
     const [loading, setLoading] = useState(true);
@@ -19,6 +27,11 @@ export default function Dashboard() {
         recentTransactions: [],
         allExpenses: []
     });
+    const [quote, setQuote] = useState(QUOTES[0]);
+
+    useEffect(() => {
+        setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+    }, []);
 
     useEffect(() => {
         if (user) {
@@ -131,8 +144,36 @@ export default function Dashboard() {
 
     return (
         <Layout>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 className="page-title" style={{ marginBottom: 0 }}>Dashboard</h2>
+            <div style={{ marginBottom: '2rem' }}>
+                <h1 className="page-title" style={{ marginBottom: '0.5rem' }}>
+                    Welcome back, {profile?.full_name?.split(' ')[0] || 'User'}!
+                </h1>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.1rem' }}>
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+            </div>
+
+            {/* Motivational Quote Banner */}
+            <div className="glass-panel" style={{
+                padding: '1rem 1.5rem',
+                marginBottom: '1.5rem',
+                background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)',
+                border: '1px solid rgba(99, 102, 241, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem'
+            }}>
+                <p style={{ fontStyle: 'italic', color: 'var(--color-text-primary)', fontSize: '1rem', fontWeight: '500', margin: 0 }}>
+                    "{quote.text}"
+                </p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', fontWeight: '600', margin: 0 }}>
+                    — {quote.author}
+                </p>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
                 <button className="btn btn-primary" onClick={fetchDashboardData}>
                     Refresh Data
                 </button>
@@ -202,6 +243,9 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Motivational Quote */}
+
                 </div>
             </div>
 
@@ -227,6 +271,6 @@ export default function Dashboard() {
                     )}
                 </div>
             </div>
-        </Layout>
+        </Layout >
     );
 }
