@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { expenseService } from '../services';
 import { Plus, Trash2, Calendar, Tag, DollarSign } from 'lucide-react';
 import SkeletonLoader from '../components/SkeletonLoader';
 import ExpenseItem from '../components/ExpenseItem';
+import { formatCurrency, getCurrencySymbol } from '../utils/currency';
+import { formatErrorMessage } from '../utils/errorHandler';
+import { EXPENSE_CATEGORIES } from '../utils/constants';
 
 export default function Expenses() {
     const { user, profile } = useAuth();
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+    const [validationErrors, setValidationErrors] = useState({});
 
     const [formData, setFormData] = useState({
         title: '',
@@ -20,12 +25,9 @@ export default function Expenses() {
         isRecurring: false
     });
 
-    const categories = ['Food', 'Transport', 'Housing', 'Utilities', 'Entertainment', 'Health', 'Shopping', 'Other'];
+    const categories = EXPENSE_CATEGORIES;
 
-    const getCurrencySymbol = () => {
-        const currency = profile?.currency || 'USD';
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency }).formatToParts(0).find(part => part.type === 'currency').value;
-    };
+    const currencySymbol = getCurrencySymbol(profile?.currency || 'USD');
 
     useEffect(() => {
         if (user) fetchExpenses();
@@ -33,15 +35,12 @@ export default function Expenses() {
 
     const fetchExpenses = async () => {
         try {
-            const { data, error } = await supabase
-                .from('expenses')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('date', { ascending: false });
-
-            if (error) throw error;
-            setExpenses(data || []);
+            setError(null);
+            const data = await expenseService.getExpenses(user.id);
+            setExpenses(data);
         } catch (error) {
+            const message = formatErrorMessage(error, 'fetching expenses');
+            setError(message);
             console.error('Error fetching expenses:', error);
         } finally {
             setLoading(false);
@@ -51,22 +50,25 @@ export default function Expenses() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
+        setValidationErrors({});
+        setError(null);
+
+        const expenseData = {
+            user_id: user.id,
+            title: formData.title,
+            amount: formData.amount,
+            category: formData.category,
+            date: formData.date,
+            is_recurring: formData.isRecurring
+        };
 
         try {
-            const { error } = await supabase.from('expenses').insert([
-                {
-                    user_id: user.id,
-                    title: formData.title,
-                    amount: formData.amount,
-                    category: formData.category,
-                    date: formData.date,
-                    is_recurring: formData.isRecurring
-                }
-            ]);
+            const newExpense = await expenseService.createExpense(expenseData);
 
-            if (error) throw error;
+            // Optimistically add to UI
+            setExpenses(prev => [newExpense, ...prev]);
 
-            // Reset form and refresh list
+            // Reset form
             setFormData({
                 title: '',
                 amount: '',
@@ -74,9 +76,17 @@ export default function Expenses() {
                 date: new Date().toISOString().split('T')[0],
                 isRecurring: false
             });
-            fetchExpenses();
         } catch (error) {
-            alert('Error adding expense: ' + error.message);
+            const message = formatErrorMessage(error, 'adding expense');
+            setError(message);
+            // Parse validation errors if any
+            if (error.message && error.message.includes('required')) {
+                const errors = {};
+                if (error.message.includes('Title')) errors.title = error.message;
+                if (error.message.includes('Amount')) errors.amount = error.message;
+                if (error.message.includes('Category')) errors.category = error.message;
+                setValidationErrors(errors);
+            }
         } finally {
             setSubmitting(false);
         }
@@ -85,16 +95,17 @@ export default function Expenses() {
     const handleDelete = async (id) => {
         if (!confirm('Are you sure you want to delete this expense?')) return;
 
-        try {
-            const { error } = await supabase
-                .from('expenses')
-                .delete()
-                .eq('id', id);
+        // Optimistic update
+        const backup = [...expenses];
+        setExpenses(prev => prev.filter(ex => ex.id !== id));
 
-            if (error) throw error;
-            setExpenses(expenses.filter(ex => ex.id !== id));
+        try {
+            await expenseService.deleteExpense(id, user.id);
         } catch (error) {
-            alert('Error deleting expense: ' + error.message);
+            // Rollback on error
+            setExpenses(backup);
+            const message = formatErrorMessage(error, 'deleting expense');
+            setError(message);
         }
     };
 
@@ -130,7 +141,7 @@ export default function Expenses() {
                                     color: 'var(--color-text-secondary)',
                                     fontWeight: 'bold'
                                 }}>
-                                    {getCurrencySymbol()}
+                                    {currencySymbol}
                                 </div>
                                 <input
                                     type="number"

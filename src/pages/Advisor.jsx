@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Layout from '../components/Layout';
 import { Brain, CheckCircle, AlertTriangle, XCircle, ShoppingBag, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { expenseService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -70,18 +71,15 @@ export default function Advisor() {
 
     const addToExpenses = async () => {
         try {
-            const { error } = await supabase.from('expenses').insert([
-                {
-                    user_id: user.id,
-                    title: item,
-                    amount: price,
-                    category: advice.type === 'Necessary' ? 'Essentials' : 'Shopping',
-                    date: new Date().toISOString().split('T')[0],
-                    is_recurring: false
-                }
-            ]);
+            await expenseService.createExpense({
+                user_id: user.id,
+                title: item,
+                amount: price,
+                category: advice.type === 'Necessary' ? 'Essentials' : 'Shopping',
+                date: new Date().toISOString().split('T')[0],
+                is_recurring: false
+            });
 
-            if (error) throw error;
             setSaved(true);
         } catch (error) {
             alert('Error adding expense: ' + error.message);

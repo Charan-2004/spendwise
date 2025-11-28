@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { expenseService } from '../services';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Wallet } from 'lucide-react';
 import SkeletonLoader from '../components/SkeletonLoader';
 import ExpenseItem from '../components/ExpenseItem';
@@ -51,25 +52,24 @@ export default function Dashboard() {
             const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
             const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString();
 
-            const { data: existing } = await supabase
-                .from('expenses')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('title', 'Monthly Fixed Expenses')
-                .gte('date', firstDay)
-                .lte('date', lastDay);
+            const allExpenses = await expenseService.getExpenses(user.id, { useCache: false });
+            const existing = allExpenses.filter(ex =>
+                ex.title === 'Monthly Fixed Expenses' &&
+                ex.date >= firstDay &&
+                ex.date <= lastDay
+            );
 
-            if (existing && existing.length > 0) return;
+            if (existing.length > 0) return;
 
             // 3. Add fixed expense if not exists
-            await supabase.from('expenses').insert([{
+            await expenseService.createExpense({
                 user_id: user.id,
                 title: 'Monthly Fixed Expenses',
                 amount: fixedAmount,
                 category: 'Bills',
                 date: new Date().toISOString().split('T')[0],
                 is_recurring: true
-            }]);
+            });
 
             // Refresh expenses to show new deduction
             fetchDashboardData();
@@ -87,20 +87,8 @@ export default function Dashboard() {
 
             const monthlyIncome = Number(profile?.monthly_income || 0);
 
-            // Fetch all expenses
-            const fetchPromise = supabase
-                .from('expenses')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('date', { ascending: false });
-
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Dashboard fetch timed out')), 5000)
-            );
-
-            const { data: expenses, error } = await Promise.race([fetchPromise, timeoutPromise]);
-
-            if (error) throw error;
+            // Fetch all expenses using service
+            const expenses = await expenseService.getExpenses(user.id);
 
             const total = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
             const monthly = expenses
@@ -188,7 +176,7 @@ export default function Dashboard() {
                             <SkeletonLoader type="circle" width="200px" height="200px" />
                         </div>
                     ) : (
-                        <SpendingChart expenses={stats.allExpenses} />
+                        <SpendingChart expenses={stats.allExpenses} currency={profile?.currency} />
                     )}
                 </div>
 
@@ -243,8 +231,6 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Motivational Quote */}
 
                 </div>
             </div>

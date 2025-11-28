@@ -3,7 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 
 const COLORS = ['#6366f1', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#64748b'];
 
-const SpendingChart = ({ expenses }) => {
+const SpendingChart = ({ expenses, currency = 'USD' }) => {
     // Process data: Group by category and sum amounts
     const data = expenses.reduce((acc, curr) => {
         const existing = acc.find(item => item.name === curr.category);
@@ -59,7 +59,7 @@ const SpendingChart = ({ expenses }) => {
                 }}>
                     <p style={{ margin: 0, fontWeight: '600', color: 'white' }}>{payload[0].name}</p>
                     <p style={{ margin: 0, color: '#94a3b8' }}>
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(payload[0].value)}
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(payload[0].value)}
                     </p>
                 </div>
             );
@@ -68,16 +68,16 @@ const SpendingChart = ({ expenses }) => {
     };
 
     return (
-        <div style={{ width: '100%', height: '400px' }}>
+        <div style={{ width: '100%', height: '280px' }}>
             <ResponsiveContainer>
-                <PieChart margin={{ right: 20 }}>
+                <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                     <Pie
                         data={chartData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={120}
-                        outerRadius={165}
-                        paddingAngle={5}
+                        innerRadius={60}
+                        outerRadius={95}
+                        paddingAngle={3}
                         dataKey="value"
                         stroke="none"
                     >
@@ -87,11 +87,11 @@ const SpendingChart = ({ expenses }) => {
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
-                        layout="vertical"
-                        verticalAlign="middle"
-                        align="right"
-                        wrapperStyle={{ paddingLeft: '20px' }}
-                        formatter={(value) => <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{value}</span>}
+                        layout="horizontal"
+                        verticalAlign="bottom"
+                        align="center"
+                        wrapperStyle={{ paddingTop: '10px', fontSize: '0.75rem' }}
+                        formatter={(value) => <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{value}</span>}
                     />
                 </PieChart>
             </ResponsiveContainer>
