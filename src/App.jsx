@@ -5,6 +5,10 @@ import Dashboard from './pages/Dashboard';
 import Expenses from './pages/Expenses';
 import Advisor from './pages/Advisor';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings';
+import Recurring from './pages/Recurring';
+import Savings from './pages/Savings';
+import Analytics from './pages/Analytics';
 
 const PrivateRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -26,8 +30,12 @@ function AppRoutes() {
             <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
             <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/expenses" element={<PrivateRoute><Expenses /></PrivateRoute>} />
+            <Route path="/recurring" element={<PrivateRoute><Recurring /></PrivateRoute>} />
+            <Route path="/savings" element={<PrivateRoute><Savings /></PrivateRoute>} />
+            <Route path="/analytics" element={<PrivateRoute><Analytics /></PrivateRoute>} />
             <Route path="/advisor" element={<PrivateRoute><Advisor /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
             <Route path="*" element={<div>No Routes Active</div>} />
         </Routes>
     );

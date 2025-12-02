@@ -1,16 +1,16 @@
 import React from 'react';
 import { Calendar, Tag, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { formatCurrency, getCurrencySymbol } from '../utils/currency';
 
-const ExpenseItem = ({ expense, onDelete, showCategory = true }) => {
+const ExpenseItem = ({ expense, onDelete, showCategory = true, currencySymbol }) => {
     const { profile } = useAuth();
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: profile?.currency || 'USD'
-        }).format(amount);
-    };
+    const displaySymbol = currencySymbol || getCurrencySymbol(profile?.currency || 'USD');
+
+    const formattedAmount = currencySymbol
+        ? `${displaySymbol}${Number(expense.amount).toFixed(2)}`
+        : formatCurrency(expense.amount, profile?.currency);
 
     return (
         <div style={{
@@ -58,7 +58,7 @@ const ExpenseItem = ({ expense, onDelete, showCategory = true }) => {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                 <span style={{ fontWeight: 'bold', fontSize: '1.125rem', color: '#f87171' }}>
-                    -{formatCurrency(expense.amount)}
+                    -{formattedAmount}
                 </span>
                 {onDelete && (
                     <button

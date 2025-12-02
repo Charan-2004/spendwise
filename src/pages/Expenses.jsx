@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { expenseService } from '../services';
-import { Plus, Trash2, Calendar, Tag, DollarSign } from 'lucide-react';
+import { suggestCategory } from '../services/categorizationService';
+import { Plus, Trash2, Calendar, Tag, DollarSign, Sparkles } from 'lucide-react';
 import SkeletonLoader from '../components/SkeletonLoader';
 import ExpenseItem from '../components/ExpenseItem';
 import { formatCurrency, getCurrencySymbol } from '../utils/currency';
@@ -24,6 +25,8 @@ export default function Expenses() {
         date: new Date().toISOString().split('T')[0],
         isRecurring: false
     });
+
+    const [suggestedCategory, setSuggestedCategory] = useState(null);
 
     const categories = EXPENSE_CATEGORIES;
 
@@ -76,6 +79,7 @@ export default function Expenses() {
                 date: new Date().toISOString().split('T')[0],
                 isRecurring: false
             });
+            setSuggestedCategory(null);
         } catch (error) {
             const message = formatErrorMessage(error, 'adding expense');
             setError(message);
@@ -123,11 +127,42 @@ export default function Expenses() {
                             <input
                                 type="text"
                                 className="input-field"
-                                placeholder="e.g. Grocery Shopping"
+                                placeholder="e.g. Grocery Shopping, Netflix, Uber"
                                 value={formData.title}
-                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                onChange={e => {
+                                    const newTitle = e.target.value;
+                                    setFormData({ ...formData, title: newTitle });
+
+                                    // Auto-suggest category after typing 3+ characters
+                                    if (newTitle.length >= 3) {
+                                        const suggested = suggestCategory(newTitle);
+                                        if (suggested && suggested !== 'Other') {
+                                            setSuggestedCategory(suggested);
+                                            setFormData(prev => ({ ...prev, category: suggested }));
+                                        }
+                                    } else {
+                                        setSuggestedCategory(null);
+                                    }
+                                }}
                                 required
                             />
+                            {suggestedCategory && (
+                                <div style={{
+                                    marginTop: '0.5rem',
+                                    padding: '0.5rem',
+                                    background: 'rgba(99, 102, 241, 0.1)',
+                                    border: '1px solid rgba(99, 102, 241, 0.2)',
+                                    borderRadius: '0.5rem',
+                                    fontSize: '0.875rem',
+                                    color: '#818cf8',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}>
+                                    <Sparkles size={14} />
+                                    Auto-categorized as: <strong>{suggestedCategory}</strong>
+                                </div>
+                            )}
                         </div>
 
                         <div className="input-group">
