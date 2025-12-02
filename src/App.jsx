@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { useEffect } from 'react';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import Expenses from './pages/Expenses';
@@ -43,6 +44,13 @@ function AppRoutes() {
 
 function App() {
     console.log('App component rendering');
+
+    // Apply theme from localStorage on initial load
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }, []);
+
     return (
         <Router>
             <AuthProvider>

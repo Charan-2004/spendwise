@@ -13,7 +13,7 @@ import { EXPENSE_CATEGORIES } from '../utils/constants';
 export default function Expenses() {
     const { user, profile } = useAuth();
     const [expenses, setExpenses] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false); // Changed from true to false
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});

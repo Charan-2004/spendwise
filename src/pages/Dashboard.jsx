@@ -22,7 +22,7 @@ export default function Dashboard() {
         recentExpenses: [],
         allExpenses: []
     });
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false); // Changed from true to false
     const [error, setError] = useState(null);
     const [quote, setQuote] = useState(quoteService.getDailyQuote());
 
