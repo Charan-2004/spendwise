@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
-import { expenseService, recurringService, currencyService } from '../services';
+import { expenseService, recurringService, currencyService, budgetService } from '../services';
 import { quoteService } from '../services/quoteService';
 import { TrendingUp, TrendingDown, Wallet, Globe, Calendar, Plus } from 'lucide-react';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -22,11 +22,11 @@ export default function Dashboard() {
         recentExpenses: [],
         allExpenses: []
     });
-    const [loading, setLoading] = useState(false); // Changed from true to false
+    const [loading, setLoading] = useState(true); // Must start as true
     const [error, setError] = useState(null);
     const [quote, setQuote] = useState(quoteService.getDailyQuote());
 
-    const [displayCurrency, setDisplayCurrency] = useState(profile?.currency || 'USD');
+    const [displayCurrency, setDisplayCurrency] = useState(null); // Start as null
     const [exchangeRate, setExchangeRate] = useState(1);
     const [availableCurrencies] = useState(currencyService.getAvailableCurrencies());
 
@@ -34,12 +34,33 @@ export default function Dashboard() {
         setQuote(quoteService.getDailyQuote());
     }, []);
 
+    // Set display currency from profile when available
+    useEffect(() => {
+        if (profile?.currency) {
+            setDisplayCurrency(profile.currency);
+        }
+    }, [profile?.currency]);
+
     useEffect(() => {
         if (user) {
-            checkAndAddFixedExpenses();
+            // checkBudgetReset(); // Disabled for performance
+            // checkAndAddFixedExpenses(); // Disabled for performance
             fetchDashboardData();
         }
     }, [user]);
+
+    const checkBudgetReset = async () => {
+        try {
+            // This will silently fail if database columns don't exist yet
+            const wasReset = await budgetService.checkAndProcessReset(user.id);
+            if (wasReset) {
+                console.log('Budget period was reset');
+            }
+        } catch (error) {
+            // Silent fail - budget reset is optional feature
+            console.log('Budget reset not available (run migration to enable)');
+        }
+    };
 
     useEffect(() => {
         if (profile?.currency) setDisplayCurrency(profile.currency);
@@ -70,7 +91,14 @@ export default function Dashboard() {
         try {
             setLoading(true);
             setError(null);
-            const expensesData = await expenseService.getExpenses(user.id);
+            let expensesData = await expenseService.getExpenses(user.id);
+
+            // Filter by current budget period if reset is enabled
+            if (profile?.reset_enabled) {
+                const period = await budgetService.getCurrentPeriod(user.id);
+                expensesData = budgetService.filterByPeriod(expensesData, period);
+            }
+
             const totalExpenses = expensesData.reduce((sum, item) => sum + Number(item.amount), 0);
             const monthlyIncome = profile?.monthly_income ? Number(profile.monthly_income) : 0;
 
@@ -283,8 +311,29 @@ export default function Dashboard() {
                                             ))}
                                         </Pie>
                                         <Tooltip
-                                            formatter={(value) => formatCurrency(value, displayCurrency)}
-                                            contentStyle={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                                            content={({ active, payload }) => {
+                                                if (active && payload && payload.length) {
+                                                    return (
+                                                        <div style={{
+                                                            background: 'rgba(15, 23, 42, 0.95)',
+                                                            border: '1px solid rgba(255,255,255,0.2)',
+                                                            borderRadius: '8px',
+                                                            padding: '0.75rem 1rem',
+                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                                                        }}>
+                                                            <p style={{ margin: 0, fontWeight: '600', color: '#fff', fontSize: '0.9rem' }}>
+                                                                {payload[0].name}
+                                                            </p>
+                                                            <p style={{ margin: '0.25rem 0 0 0', color: '#818cf8', fontWeight: '700', fontSize: '1.1rem' }}>
+                                                                {formatCurrency(payload[0].value, displayCurrency)}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }}
+                                            position={{ x: 'auto', y: 'auto' }}
+                                            cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>

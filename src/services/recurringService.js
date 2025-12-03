@@ -20,9 +20,28 @@ class RecurringService {
      * Create a new recurring rule
      */
     async createRecurringRule(ruleData) {
+        // Calculate next_due_date based on start_date and frequency
+        const startDate = new Date(ruleData.start_date || new Date());
+        const nextDate = new Date(startDate);
+
+        // Set next due date based on frequency
+        if (ruleData.frequency === 'weekly') {
+            nextDate.setDate(nextDate.getDate() + 7);
+        } else if (ruleData.frequency === 'monthly') {
+            nextDate.setMonth(nextDate.getMonth() + 1);
+        } else if (ruleData.frequency === 'yearly') {
+            nextDate.setFullYear(nextDate.getFullYear() + 1);
+        }
+
+        const dataToInsert = {
+            ...ruleData,
+            next_due_date: nextDate.toISOString().split('T')[0],
+            is_active: true
+        };
+
         const { data, error } = await supabase
             .from('recurring_expenses')
-            .insert([ruleData])
+            .insert([dataToInsert])
             .select()
             .single();
 

@@ -10,3 +10,4 @@ export { quoteService } from './quoteService';
 export { savingsService } from './savingsService';
 export { currencyService } from './currencyService';
 export { exportService } from './exportService';
+export { budgetService } from './budgetService';

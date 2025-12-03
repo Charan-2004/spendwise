@@ -36,16 +36,19 @@ export default function Recurring() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Recurring form submitted with data:', formData);
         try {
             await recurringService.createRecurringRule({
                 user_id: user.id,
                 ...formData,
                 amount: Number(formData.amount)
             });
+            console.log('Rule created successfully');
             setShowForm(false);
             setFormData({ ...formData, title: '', amount: '' });
             fetchRules();
         } catch (error) {
+            console.error('Error creating recurring rule:', error);
             alert('Failed to create rule');
         }
     };
@@ -76,8 +79,22 @@ export default function Recurring() {
             <div className="dashboard-grid">
                 {/* Form Section */}
                 {showForm && (
-                    <div className="glass-panel" style={{ gridColumn: 'span 2', marginBottom: '2rem' }}>
-                        <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Add Recurring Expense</h3>
+                    <div className="glass-panel" style={{
+                        gridColumn: 'span 2',
+                        marginBottom: '2rem',
+                        background: 'rgba(15, 23, 42, 0.6)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(99, 102, 241, 0.2)',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+                    }}>
+                        <h3 style={{
+                            marginBottom: '1.5rem',
+                            fontSize: '1.5rem',
+                            fontWeight: '700',
+                            background: 'linear-gradient(135deg, #818cf8, #a78bfa)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>Add Recurring Expense</h3>
                         <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
                             <div>
                                 <label className="form-label">Title</label>
@@ -122,9 +139,64 @@ export default function Recurring() {
                                     <option value="yearly">Yearly</option>
                                 </select>
                             </div>
-                            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                                <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">Cancel</button>
-                                <button type="submit" className="btn btn-primary">Save Rule</button>
+                            <div>
+                                <label className="form-label">Start Date</label>
+                                <input
+                                    type="date"
+                                    value={formData.start_date}
+                                    onChange={e => setFormData({ ...formData, start_date: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForm(false)}
+                                    style={{
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '0.75rem',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        color: 'rgba(255,255,255,0.8)',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = 'rgba(255,255,255,0.1)';
+                                        e.target.style.color = '#fff';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'rgba(255,255,255,0.05)';
+                                        e.target.style.color = 'rgba(255,255,255,0.8)';
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{
+                                        padding: '0.75rem 1.5rem',
+                                        borderRadius: '0.75rem',
+                                        border: 'none',
+                                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                        color: '#fff',
+                                        fontWeight: '700',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.transform = 'translateY(-2px)';
+                                        e.target.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.5)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.transform = 'translateY(0)';
+                                        e.target.style.boxShadow = '0 4px 15px rgba(99, 102, 241, 0.4)';
+                                    }}
+                                >
+                                    Save Rule
+                                </button>
                             </div>
                         </form>
                     </div>

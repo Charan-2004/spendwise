@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { User, Save, Loader2, DollarSign, Globe } from 'lucide-react';
+import { User, Save, Loader2, DollarSign, Globe, Calendar, RefreshCcw } from 'lucide-react';
 
 export default function Profile() {
     const { user, profile: contextProfile, refreshProfile } = useAuth();
@@ -12,9 +12,10 @@ export default function Profile() {
     const [profile, setProfile] = useState({
         full_name: '',
         monthly_income: '',
-        fixed_expenses: '',
         currency: 'USD',
-        avatar_url: ''
+        avatar_url: '',
+        reset_enabled: false,
+        reset_day: 1
     });
 
     useEffect(() => {
@@ -22,9 +23,10 @@ export default function Profile() {
             setProfile({
                 full_name: contextProfile.full_name || '',
                 monthly_income: contextProfile.monthly_income || '',
-                fixed_expenses: contextProfile.fixed_expenses || '',
                 currency: contextProfile.currency || 'USD',
-                avatar_url: contextProfile.avatar_url || ''
+                avatar_url: contextProfile.avatar_url || '',
+                reset_enabled: contextProfile.reset_enabled || false,
+                reset_day: contextProfile.reset_day || 1
             });
         }
     }, [contextProfile]);
@@ -39,8 +41,9 @@ export default function Profile() {
                 id: user.id,
                 full_name: profile.full_name,
                 monthly_income: profile.monthly_income,
-                fixed_expenses: profile.fixed_expenses,
                 currency: profile.currency,
+                reset_enabled: profile.reset_enabled,
+                reset_day: profile.reset_day,
                 updated_at: new Date()
             };
 
@@ -116,40 +119,20 @@ export default function Profile() {
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                            <div className="input-group">
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: '500' }}>Monthly Income</label>
-                                <div style={{ position: 'relative' }}>
-                                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)', fontWeight: '500' }}>
-                                        {getCurrencySymbol(profile.currency)}
-                                    </span>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        style={{ paddingLeft: '2.5rem' }}
-                                        value={profile.monthly_income}
-                                        onChange={e => setProfile({ ...profile, monthly_income: e.target.value })}
-                                        placeholder="0.00"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="input-group">
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: '500' }}>Fixed Expenses</label>
-                                <div style={{ position: 'relative' }}>
-                                    <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)', fontWeight: '500' }}>
-                                        {getCurrencySymbol(profile.currency)}
-                                    </span>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        style={{ paddingLeft: '2.5rem' }}
-                                        value={profile.fixed_expenses}
-                                        onChange={e => setProfile({ ...profile, fixed_expenses: e.target.value })}
-                                        placeholder="0.00"
-                                        title="This amount will be automatically deducted each month"
-                                    />
-                                </div>
+                        <div className="input-group">
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: '500' }}>Monthly Income</label>
+                            <div style={{ position: 'relative' }}>
+                                <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)', fontWeight: '500' }}>
+                                    {getCurrencySymbol(profile.currency)}
+                                </span>
+                                <input
+                                    type="number"
+                                    className="input-field"
+                                    style={{ paddingLeft: '2.5rem' }}
+                                    value={profile.monthly_income}
+                                    onChange={e => setProfile({ ...profile, monthly_income: e.target.value })}
+                                    placeholder="0.00"
+                                />
                             </div>
                         </div>
 
@@ -190,6 +173,71 @@ export default function Profile() {
                                     ▼
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Budget Reset Section */}
+                        <div style={{ padding: '1.5rem', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '0.75rem', border: '1px solid rgba(99, 102, 241, 0.1)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                                <RefreshCcw size={20} style={{ color: '#6366f1' }} />
+                                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '600', color: 'var(--color-text-primary)' }}>
+                                    Monthly Budget Reset
+                                </h4>
+                            </div>
+                            <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '1rem', lineHeight: '1.6' }}>
+                                Automatically reset your budget tracking on a specific day each month (e.g., payday). Past expenses will be kept in history.
+                            </p>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={profile.reset_enabled}
+                                        onChange={e => setProfile({ ...profile, reset_enabled: e.target.checked })}
+                                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                    />
+                                    <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>Enable Monthly Reset</span>
+                                </label>
+                            </div>
+
+                            {profile.reset_enabled && (
+                                <div className="input-group">
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                        Reset Day (1-31)
+                                    </label>
+                                    <div style={{ position: 'relative' }}>
+                                        <Calendar size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)', zIndex: 1 }} />
+                                        <select
+                                            className="input-field"
+                                            style={{
+                                                paddingLeft: '2.5rem',
+                                                appearance: 'none',
+                                                cursor: 'pointer',
+                                                backgroundColor: '#FFFFFF',
+                                                color: 'var(--color-text-primary)'
+                                            }}
+                                            value={profile.reset_day}
+                                            onChange={e => setProfile({ ...profile, reset_day: parseInt(e.target.value) })}
+                                        >
+                                            {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                                                <option key={day} value={day}>
+                                                    Day {day} of each month
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div style={{
+                                            position: 'absolute',
+                                            right: '0.75rem',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            pointerEvents: 'none',
+                                            color: 'var(--color-text-tertiary)',
+                                            fontSize: '0.75rem'
+                                        }}>
+                                            ▼
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <button

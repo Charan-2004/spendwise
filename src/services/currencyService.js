@@ -8,37 +8,39 @@ class CurrencyService {
     }
 
     async fetchRates(base = 'USD') {
+        // DISABLED FOR PERFORMANCE - API is too slow (50+ seconds timeout)
         // Return cached rates if less than 1 hour old and base matches
-        const now = Date.now();
-        if (this.rates && this.base === base && (now - this.lastFetch) < 3600000) {
-            return this.rates;
-        }
+        // const now = Date.now();
+        // if (this.rates && this.base === base && (now - this.lastFetch) < 3600000) {
+        //     return this.rates;
+        // }
 
-        try {
-            const response = await fetch(`${BASE_URL}/${base}`);
-            const data = await response.json();
+        // try {
+        //     const response = await fetch(`${BASE_URL}/${base}`);
+        //     const data = await response.json();
 
-            if (data.result === 'success') {
-                this.rates = data.rates;
-                this.lastFetch = now;
-                this.base = base;
-                return this.rates;
-            } else {
-                throw new Error('Failed to fetch rates');
-            }
-        } catch (error) {
-            console.error('Error fetching currency rates:', error);
-            // Fallback to basic rates if API fails
-            return {
-                USD: 1,
-                EUR: 0.92,
-                GBP: 0.79,
-                JPY: 150.0,
-                CAD: 1.35,
-                AUD: 1.52,
-                INR: 83.5
-            };
-        }
+        //     if (data.result === 'success') {
+        //         this.rates = data.rates;
+        //         this.lastFetch = now;
+        //         this.base = base;
+        //         return this.rates;
+        //     } else {
+        //         throw new Error('Failed to fetch rates');
+        //     }
+        // } catch (error) {
+        //     console.error('Error fetching currency rates:', error);
+
+        // Fallback to basic rates - using static rates for performance
+        return {
+            USD: 1,
+            EUR: 0.92,
+            GBP: 0.79,
+            JPY: 150.0,
+            CAD: 1.35,
+            AUD: 1.52,
+            INR: 83.5
+        };
+        // }
     }
 
     async convert(amount, from, to) {

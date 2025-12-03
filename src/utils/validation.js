@@ -29,7 +29,7 @@ export const validateExpense = (data) => {
     }
 
     // Category validation
-    const validCategories = ['Food', 'Transport', 'Housing', 'Utilities', 'Entertainment', 'Health', 'Shopping', 'Other', 'Bills'];
+    const validCategories = ['Food', 'Transport', 'Housing', 'Utilities', 'Entertainment', 'Health', 'Shopping', 'Savings', 'Other', 'Bills'];
     if (!data.category) {
         errors.category = 'Category is required';
     } else if (!validCategories.includes(data.category)) {

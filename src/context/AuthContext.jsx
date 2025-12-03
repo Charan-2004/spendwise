@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
                     .single();
 
                 const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Profile fetch timed out')), 5000)
+                    setTimeout(() => reject(new Error('Profile fetch timed out')), 5000) // Back to 5s - 20s was too long
                 );
 
                 const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);

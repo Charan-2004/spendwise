@@ -4,7 +4,7 @@ const SkeletonLoader = ({ type = 'text', width, height, style = {} }) => {
     const baseStyle = {
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
         borderRadius: '0.5rem',
-        animation: 'pulse 1.5s infinite ease-in-out',
+        /* animation: 'pulse 1.5s infinite ease-in-out', */ // Disabled for performance
         ...style
     };
 
@@ -20,15 +20,7 @@ const SkeletonLoader = ({ type = 'text', width, height, style = {} }) => {
 
     return (
         <>
-            <style>
-                {`
-                    @keyframes pulse {
-                        0% { opacity: 0.6; }
-                        50% { opacity: 0.3; }
-                        100% { opacity: 0.6; }
-                    }
-                `}
-            </style>
+            {/* Removed pulse animation for performance */}
             <div style={baseStyle} />
         </>
     );
